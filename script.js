@@ -1,20 +1,20 @@
-
 let bluetoothDevice;
 let bluetoothCharacteristic;
 
-function generateRows() {
-  const count = parseInt(document.getElementById('numRows').value);
-  const container = document.getElementById('punchRows');
-  container.innerHTML = "";
+function generatePunchRows() {
+  const count = parseInt(document.getElementById('rowCount').value);
+  const container = document.getElementById('punchRowsContainer');
+  container.innerHTML = '';
+
   for (let i = 1; i <= count; i++) {
-    const div = document.createElement('div');
-    div.className = "row";
-    div.innerHTML = `
-      <h3>Punch ${i}</h3>
-      <input type="text" placeholder="Value1,Value2,Value3" class="values" />
-      <input type="number" placeholder="Repeat Count" class="repeat" />
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.innerHTML = `
+      <label>Punch ${i}:</label>
+      <input type="text" placeholder="e.g. 1,2,3" id="values-${i}"/>
+      <input type="number" placeholder="Repeat" min="1" id="repeat-${i}"/>
     `;
-    container.appendChild(div);
+    container.appendChild(row);
   }
 }
 
@@ -22,47 +22,53 @@ async function connectBluetooth() {
   try {
     bluetoothDevice = await navigator.bluetooth.requestDevice({
       acceptAllDevices: true,
-      optionalServices: ['0000ffe0-0000-1000-8000-00805f9b34fb']
+      optionalServices: [0x1101]
     });
 
     const server = await bluetoothDevice.gatt.connect();
-    const service = await server.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
-    bluetoothCharacteristic = await service.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb');
-    alert("Bluetooth connected!");
+    const services = await server.getPrimaryServices();
+    const service = services[0];
+    const characteristics = await service.getCharacteristics();
+    bluetoothCharacteristic = characteristics[0];
+
+    document.getElementById('status').textContent = 'Status: Connected';
   } catch (error) {
-    alert("Bluetooth connection failed: " + error);
+    alert('Bluetooth connect failed: ' + error);
   }
 }
 
-function startPunch() {
-  const values = document.querySelectorAll('.values');
-  const repeats = document.querySelectorAll('.repeat');
-  const simultaneous = document.getElementById('simultaneous').checked;
-  const allData = [];
-
-  for (let i = 0; i < values.length; i++) {
-    const nums = values[i].value;
-    const repeat = repeats[i].value || "1";
-    allData.push(nums + ";" + repeat);
-  }
+function sendAll() {
+  const simultaneous = document.getElementById('simultaneousCheckbox').checked;
+  const count = parseInt(document.getElementById('rowCount').value);
 
   if (!bluetoothCharacteristic) {
-    alert("Please connect to Bluetooth first.");
+    alert('Please connect to HC-05 first.');
     return;
   }
 
-  if (simultaneous) {
-    sendBluetooth(allData.join(" | "));
-  } else {
-    allData.forEach((data, index) => {
-      setTimeout(() => {
-        sendBluetooth(data);
-      }, index * 1000);
-    });
-  }
+  const sendData = async () => {
+    for (let i = 1; i <= count; i++) {
+      const values = document.getElementById(`values-${i}`).value.trim();
+      const repeat = document.getElementById(`repeat-${i}`).value.trim() || '1';
+
+      const formatted = `${values};${repeat}\n`;
+
+      try {
+        await bluetoothCharacteristic.writeValue(new TextEncoder().encode(formatted));
+        console.log('Sent:', formatted);
+        await new Promise(r => setTimeout(r, 500)); // Delay for safety
+      } catch (err) {
+        console.error('Send error:', err);
+        alert('Failed to send data');
+        return;
+      }
+
+      if (simultaneous) break; // Send only first if simultaneous
+    }
+
+    alert('Data sent successfully');
+  };
+
+  sendData();
 }
 
-function sendBluetooth(data) {
-  const encoder = new TextEncoder();
-  bluetoothCharacteristic.writeValue(encoder.encode(data + "\n"));
-}
