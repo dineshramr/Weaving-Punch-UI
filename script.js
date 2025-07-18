@@ -1,74 +1,90 @@
 let bluetoothDevice;
 let bluetoothCharacteristic;
 
-function generatePunchRows() {
-  const count = parseInt(document.getElementById('rowCount').value);
-  const container = document.getElementById('punchRowsContainer');
-  container.innerHTML = '';
+function generateRows() {
+  const num = parseInt(document.getElementById("numRows").value);
+  const container = document.getElementById("punchRows");
+  container.innerHTML = "";
 
-  for (let i = 1; i <= count; i++) {
-    const row = document.createElement('div');
-    row.className = 'row';
-    row.innerHTML = `
-      <label>Punch ${i}:</label>
-      <input type="text" placeholder="e.g. 1,2,3" id="values-${i}"/>
-      <input type="number" placeholder="Repeat" min="1" id="repeat-${i}"/>
+  for (let i = 1; i <= num; i++) {
+    const div = document.createElement("div");
+    div.className = "row";
+    div.innerHTML = `
+      <strong>Punch ${i}</strong><br>
+      Value 1: <input type="text" id="v1-${i}" />
+      Value 2: <input type="text" id="v2-${i}" />
+      Value 3: <input type="text" id="v3-${i}" />
+      Repeat: <input type="number" id="repeat-${i}" min="1" value="1" />
     `;
-    container.appendChild(row);
+    container.appendChild(div);
   }
 }
 
 async function connectBluetooth() {
   try {
-    bluetoothDevice = await navigator.bluetooth.requestDevice({
+    const device = await navigator.bluetooth.requestDevice({
       acceptAllDevices: true,
-      optionalServices: [0x1101]
+      optionalServices: [0x1101] // Serial Port Profile UUID
     });
 
-    const server = await bluetoothDevice.gatt.connect();
-    const services = await server.getPrimaryServices();
-    const service = services[0];
-    const characteristics = await service.getCharacteristics();
-    bluetoothCharacteristic = characteristics[0];
+    const server = await device.gatt.connect();
+    const service = await server.getPrimaryService(0x1101);
+    const characteristic = await service.getCharacteristic(0x1101);
 
-    document.getElementById('status').textContent = 'Status: Connected';
+    bluetoothDevice = device;
+    bluetoothCharacteristic = characteristic;
+
+    document.getElementById("status").textContent = "✅ Bluetooth Connected";
   } catch (error) {
-    alert('Bluetooth connect failed: ' + error);
+    document.getElementById("status").textContent = "❌ Bluetooth connection failed";
+    console.error(error);
   }
 }
 
-function sendAll() {
-  const simultaneous = document.getElementById('simultaneousCheckbox').checked;
-  const count = parseInt(document.getElementById('rowCount').value);
-
+async function sendData(data) {
   if (!bluetoothCharacteristic) {
-    alert('Please connect to HC-05 first.');
+    alert("Bluetooth not connected!");
     return;
   }
 
-  const sendData = async () => {
-    for (let i = 1; i <= count; i++) {
-      const values = document.getElementById(`values-${i}`).value.trim();
-      const repeat = document.getElementById(`repeat-${i}`).value.trim() || '1';
+  const encoder = new TextEncoder();
+  const encoded = encoder.encode(data + "\n");
 
-      const formatted = `${values};${repeat}\n`;
-
-      try {
-        await bluetoothCharacteristic.writeValue(new TextEncoder().encode(formatted));
-        console.log('Sent:', formatted);
-        await new Promise(r => setTimeout(r, 500)); // Delay for safety
-      } catch (err) {
-        console.error('Send error:', err);
-        alert('Failed to send data');
-        return;
-      }
-
-      if (simultaneous) break; // Send only first if simultaneous
-    }
-
-    alert('Data sent successfully');
-  };
-
-  sendData();
+  try {
+    await bluetoothCharacteristic.writeValue(encoded);
+    console.log("Sent:", data);
+  } catch (e) {
+    console.error("Send error:", e);
+  }
 }
+
+function startPunch() {
+  const num = parseInt(document.getElementById("numRows").value);
+  const simultaneous = document.getElementById("simultaneous").checked;
+
+  const punches = [];
+
+  for (let i = 1; i <= num; i++) {
+    const v1 = document.getElementById(`v1-${i}`).value;
+    const v2 = document.getElementById(`v2-${i}`).value;
+    const v3 = document.getElementById(`v3-${i}`).value;
+    const repeat = document.getElementById(`repeat-${i}`).value;
+
+    const combined = `${v1},${v2},${v3};${repeat}`;
+    punches.push(combined);
+  }
+
+  if (simultaneous) {
+    const all = punches.join("|"); // Example format: 1,2,3;2|4,5,6;1
+    sendData(all);
+  } else {
+    (async () => {
+      for (let punch of punches) {
+        await sendData(punch);
+        await new Promise(r => setTimeout(r, 500)); // slight delay
+      }
+    })();
+  }
+}
+
 
