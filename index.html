@@ -1,77 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Punch Data Sender</title>
-  <link rel="icon" type="image/png" href="favicon.png">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Punch Input</title>
+  <link rel="icon" type="image/png" href="favicon.png"/>
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      margin: 30px;
-      background-color: #f0f2f5;
-    }
-    img {
-      width: 120px;
-      margin-bottom: 10px;
+      background: #f3f3f3;
+      padding: 20px;
     }
     h1 {
-      margin: 0;
+      color: #333;
     }
-    #inputSection {
+    .input-row {
+      margin: 10px auto;
+      padding: 10px;
+      background: #fff;
+      width: 80%;
+      max-width: 500px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .input-row label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .input-row input {
+      width: 90%;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    #generatedInputs {
       margin-top: 20px;
     }
-    .punch-row {
-      margin: 15px auto;
-      padding: 10px;
-      background-color: #ffffff;
-      border-radius: 10px;
-      width: 60%;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    .punch-row input {
-      padding: 8px;
-      margin: 5px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      width: 60%;
-    }
     button {
-      padding: 10px 20px;
-      margin: 15px;
+      padding: 12px 20px;
+      font-size: 16px;
       border: none;
       background-color: #007bff;
       color: white;
-      border-radius: 5px;
-      font-size: 16px;
+      border-radius: 8px;
       cursor: pointer;
+      margin: 10px;
     }
     button:hover {
       background-color: #0056b3;
     }
-    #status {
+    #bluetoothStatus {
       margin-top: 10px;
       font-weight: bold;
+    }
+    #connectBluetooth {
+      margin-top: 40px;
+    }
+    #logo {
+      max-width: 100px;
+      margin-bottom: 10px;
     }
   </style>
 </head>
 <body>
-  <img src="logo.jpg" alt="Logo">
-  <h1>Punch Sender</h1>
+  <img id="logo" src="logo.jpg" alt="Logo" />
+  <h1>Punch Sheet Sender</h1>
   
-  <button onclick="connectBluetooth()">🔌 Connect Bluetooth</button>
-  <div id="status">Not connected</div>
+  <label for="numPunches">Enter number of Punch Rows:</label>
+  <input type="number" id="numPunches" min="1" style="padding: 10px; font-size: 16px; width: 60px;" />
+  <button onclick="generatePunchInputs()">Generate Punch Inputs</button>
 
-  <div>
-    <input type="number" id="rowCount" placeholder="Enter number of punches" min="1">
-    <button onclick="generateRows()">Generate</button>
-  </div>
+  <div id="generatedInputs"></div>
 
-  <form id="inputSection"></form>
-  <button onclick="sendData()">Start</button>
+  <button onclick="sendAllPunchData()">Send All Punch Data</button>
+
+  <button id="connectBluetooth">Connect to Bluetooth</button>
+  <div id="bluetoothStatus">Not Connected</div>
 
   <script src="script.js"></script>
 </body>
 </html>
-
-
