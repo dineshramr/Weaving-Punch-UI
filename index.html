@@ -8,14 +8,6 @@
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
-      background-color: #f0f0f0;
-    }
-    .logo {
-      width: 120px;
-      display: block;
-      margin: 0 auto 20px auto;
-    }
-    h1 {
       text-align: center;
     }
     .row {
@@ -27,15 +19,22 @@
     }
     button {
       padding: 10px 20px;
-      margin: 10px 5px;
+      margin-top: 10px;
+    }
+    .logo {
+      max-width: 200px;
+      margin-bottom: 20px;
     }
     #punchRows {
       margin-top: 20px;
+      text-align: left;
+      display: inline-block;
     }
   </style>
 </head>
 <body>
   <img src="logo.jpg" alt="Logo" class="logo" />
+
   <h1>Punch Machine Control</h1>
 
   <label>Number of Punch Rows:</label>
@@ -44,11 +43,16 @@
 
   <div id="punchRows"></div>
 
-  <label><input type="checkbox" id="simultaneous" /> Send Simultaneously</label><br><br>
+  <label>
+    <input type="checkbox" id="simultaneous" /> Send Simultaneously
+  </label>
+  <br /><br />
+
   <button onclick="startPunch()">Start Punch</button>
   <button onclick="connectBluetooth()">🔗 Connect Bluetooth</button>
 
   <script src="script.js"></script>
 </body>
 </html>
+
 
