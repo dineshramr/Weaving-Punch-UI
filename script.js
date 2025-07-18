@@ -1,83 +1,75 @@
 let bluetoothDevice;
 let bluetoothCharacteristic;
 
-async function connectBluetooth() {
-  try {
-    bluetoothDevice = await navigator.bluetooth.requestDevice({
-      acceptAllDevices: true,
-      optionalServices: [0x1101] // SPP UUID (some devices support it)
-    });
-
-    const server = await bluetoothDevice.gatt.connect();
-    const services = await server.getPrimaryServices();
-
-    for (const service of services) {
-      const characteristics = await service.getCharacteristics();
-      for (const char of characteristics) {
-        if (char.properties.write) {
-          bluetoothCharacteristic = char;
-          alert("Bluetooth connected!");
-          return;
-        }
-      }
-    }
-
-    alert("No writable Bluetooth characteristic found.");
-  } catch (error) {
-    console.error("Bluetooth connection failed:", error);
-    alert("Bluetooth connection failed.");
-  }
+function connectBluetooth() {
+  navigator.bluetooth.requestDevice({
+    acceptAllDevices: true,
+    optionalServices: ['0000ffe0-0000-1000-8000-00805f9b34fb'] // HC-05 uses custom services
+  })
+  .then(device => {
+    bluetoothDevice = device;
+    return device.gatt.connect();
+  })
+  .then(server => server.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb'))
+  .then(service => service.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb'))
+  .then(characteristic => {
+    bluetoothCharacteristic = characteristic;
+    alert("🔗 Bluetooth Connected!");
+  })
+  .catch(error => alert("❌ Bluetooth Error: " + error));
 }
 
 function generateRows() {
   const numRows = parseInt(document.getElementById("numRows").value);
-  const container = document.getElementById("punchRows");
-  container.innerHTML = "";
+  const punchRowsDiv = document.getElementById("punchRows");
+  punchRowsDiv.innerHTML = ""; // clear previous
 
-  for (let i = 0; i < numRows; i++) {
+  for (let i = 1; i <= numRows; i++) {
     const row = document.createElement("div");
     row.className = "row";
     row.innerHTML = `
-      <strong>Punch ${i + 1}</strong><br>
-      Value1: <input type="text" id="val1_${i}" size="5" />
-      Value2: <input type="text" id="val2_${i}" size="5" />
-      Value3: <input type="text" id="val3_${i}" size="5" />
-      Repeat: <input type="number" id="repeat_${i}" size="3" value="1" />
+      <label>Punch ${i}:</label>
+      <input type="text" id="values${i}" placeholder="e.g., 1,3,5" />
+      <input type="number" id="repeat${i}" placeholder="Repeat" min="1" />
     `;
-    container.appendChild(row);
+    punchRowsDiv.appendChild(row);
   }
 }
 
-async function sendData(data) {
-  if (!bluetoothCharacteristic) {
-    alert("Bluetooth not connected.");
-    return;
-  }
-
-  const encoder = new TextEncoder();
-  await bluetoothCharacteristic.writeValue(encoder.encode(data + "\n"));
-}
-
-async function startPunch() {
+function startPunch() {
   const numRows = parseInt(document.getElementById("numRows").value);
   const simultaneous = document.getElementById("simultaneous").checked;
 
-  for (let i = 0; i < numRows; i++) {
-    const val1 = document.getElementById(`val1_${i}`).value.trim();
-    const val2 = document.getElementById(`val2_${i}`).value.trim();
-    const val3 = document.getElementById(`val3_${i}`).value.trim();
-    const repeat = document.getElementById(`repeat_${i}`).value.trim();
+  const punchData = [];
 
-    const values = [val1, val2, val3].filter(v => v !== "").join(",");
-    const command = `${values};${repeat}`;
-
-    if (simultaneous) {
-      sendData(command);
-    } else {
-      await sendData(command);
-      await new Promise(resolve => setTimeout(resolve, 500)); // slight delay between commands
+  for (let i = 1; i <= numRows; i++) {
+    const values = document.getElementById(`values${i}`).value;
+    const repeat = document.getElementById(`repeat${i}`).value || 1;
+    if (values) {
+      punchData.push(`${values};${repeat}`);
     }
   }
 
-  alert("Data sent!");
+  if (simultaneous) {
+    punchData.forEach(data => sendData(data));
+  } else {
+    let index = 0;
+    function sendSequentially() {
+      if (index < punchData.length) {
+        sendData(punchData[index]);
+        index++;
+        setTimeout(sendSequentially, 1000); // 1 second delay
+      }
+    }
+    sendSequentially();
+  }
+}
+
+function sendData(data) {
+  if (bluetoothCharacteristic) {
+    const encoder = new TextEncoder();
+    bluetoothCharacteristic.writeValue(encoder.encode(data + "\n"));
+  } else {
+    alert("Bluetooth not connected!");
+  }
 }
