@@ -1,75 +1,59 @@
-let bluetoothDevice;
-let bluetoothCharacteristic;
-
-async function connectBluetooth() {
-  try {
-    bluetoothDevice = await navigator.bluetooth.requestDevice({
-      acceptAllDevices: true,
-      optionalServices: [0xFFE0]
-    });
-    const server = await bluetoothDevice.gatt.connect();
-    const service = await server.getPrimaryService(0xFFE0);
-    bluetoothCharacteristic = await service.getCharacteristic(0xFFE1);
-    alert("✅ Bluetooth Connected");
-  } catch (error) {
-    alert("❌ Bluetooth Connection Failed: " + error);
-  }
-}
-
 function generateRows() {
-  const numRows = parseInt(document.getElementById("numRows").value);
-  const container = document.getElementById("punchRows");
+  const count = parseInt(document.getElementById("rowCountInput").value);
+  const container = document.getElementById("punchContainer");
   container.innerHTML = "";
 
-  for (let i = 1; i <= numRows; i++) {
-    const row = document.createElement("div");
-    row.className = "punch-input-group";
+  for (let i = 0; i < count; i++) {
+    const rowDiv = document.createElement("div");
+    rowDiv.className = "punchRow";
 
     const label = document.createElement("label");
-    label.textContent = `Punch ${i}:`;
+    label.textContent = `Punch ${i + 1}:`;
 
-    const val1 = document.createElement("input");
-    val1.placeholder = "Value 1";
+    const valueInput = document.createElement("input");
+    valueInput.type = "text";
+    valueInput.placeholder = "Enter values (e.g. 1,3,5)";
+    valueInput.className = "valueInput";
 
-    const val2 = document.createElement("input");
-    val2.placeholder = "Value 2";
+    const repeatInput = document.createElement("input");
+    repeatInput.type = "number";
+    repeatInput.placeholder = "Repeat";
+    repeatInput.className = "repeatInput";
 
-    const val3 = document.createElement("input");
-    val3.placeholder = "Value 3";
-
-    const repeat = document.createElement("input");
-    repeat.placeholder = "Repeat";
-    repeat.type = "number";
-
-    row.append(label, val1, val2, val3, repeat);
-    container.appendChild(row);
+    rowDiv.appendChild(label);
+    rowDiv.appendChild(valueInput);
+    rowDiv.appendChild(repeatInput);
+    container.appendChild(rowDiv);
   }
 }
 
-async function startPunch() {
-  if (!bluetoothCharacteristic) {
-    alert("Please connect Bluetooth first!");
-    return;
-  }
-
+function sendData() {
   const simultaneous = document.getElementById("simultaneous").checked;
-  const rows = document.getElementById("punchRows").children;
+  const valueInputs = document.querySelectorAll(".valueInput");
+  const repeatInputs = document.querySelectorAll(".repeatInput");
+
+  const combinedData = [];
+
+  for (let i = 0; i < valueInputs.length; i++) {
+    const values = valueInputs[i].value.trim();
+    const repeat = repeatInputs[i].value.trim();
+    combinedData.push(`${values};${repeat}`);
+  }
 
   if (simultaneous) {
-    for (const row of rows) {
-      const inputs = row.querySelectorAll("input");
-      const values = Array.from(inputs).map(input => input.value).join(",");
-      await bluetoothCharacteristic.writeValue(new TextEncoder().encode(values + "\n"));
-    }
+    // Send all at once
+    const data = combinedData.join("|");
+    console.log("Sending simultaneously:", data);
+    // Replace with Bluetooth send here
   } else {
-    for (const row of rows) {
-      const inputs = row.querySelectorAll("input");
-      const values = Array.from(inputs).map(input => input.value).join(",");
-      await bluetoothCharacteristic.writeValue(new TextEncoder().encode(values + "\n"));
-      await new Promise(resolve => setTimeout(resolve, 1000));
+    // Send one by one
+    for (let i = 0; i < combinedData.length; i++) {
+      console.log("Sending:", combinedData[i]);
+      // Replace with Bluetooth send here
     }
   }
 }
+
 
 
 
