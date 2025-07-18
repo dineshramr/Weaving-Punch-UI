@@ -1,59 +1,76 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8">
-  <title>Punching Machine</title>
-  <link rel="icon" type="image/png" href="favicon.png">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Punch Machine Bluetooth Control</title>
+  <link rel="icon" href="favicon.png" type="image/png">
   <style>
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
-      background: #f4f4f4;
-    }
-    .header {
+      background-color: #f4f4f4;
       text-align: center;
     }
-    .header img {
-      max-width: 150px;
+
+    img.logo {
+      height: 60px;
       margin-bottom: 10px;
     }
+
     .row {
       margin-bottom: 15px;
     }
+
     input {
       margin: 5px;
-      padding: 8px;
-      font-size: 14px;
+      padding: 5px;
     }
+
     button {
       padding: 10px 20px;
-      font-size: 16px;
-      margin-top: 10px;
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <img src="logo.jpg" alt="Logo" />
-    <h1>Punching Sheet Controller</h1>
-  </div>
 
-  <div>
-    <input type="number" id="numRows" placeholder="Enter number of punches">
-    <button onclick="generateRows()">Generate Rows</button>
-    <button onclick="connectBluetooth()">Connect Bluetooth</button>
-  </div>
+  <!-- Logo -->
+  <img src="logo.jpg" alt="Logo" class="logo">
 
+  <!-- Heading -->
+  <h1>Punching Sheet Controller</h1>
+
+  <!-- Punch row container -->
   <div id="punchRows"></div>
 
-  <label>
-    <input type="checkbox" id="simultaneous"> Send Simultaneously
-  </label><br>
+  <!-- Number of rows input -->
+  <div class="row">
+    <label for="numRows">Enter Number of Punch Rows:</label>
+    <input type="number" id="numRows" min="1" value="1">
+    <button onclick="createRows()">Create Rows</button>
+  </div>
 
-  <button onclick="startPunch()">Start</button>
+  <!-- Simultaneous checkbox -->
+  <div class="row">
+    <label>
+      <input type="checkbox" id="simultaneousCheckBox">
+      Send Simultaneously
+    </label>
+  </div>
+
+  <!-- Start button -->
+  <div class="row">
+    <button onclick="sendAll()">Start</button>
+  </div>
+
+  <!-- Bluetooth connection UI -->
+  <div class="row">
+    <select id="portList"></select>
+    <button onclick="connectBluetooth()">Connect</button>
+    <span id="status">Not connected</span>
+  </div>
 
   <script src="script.js"></script>
 </body>
 </html>
+
 
