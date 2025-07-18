@@ -1,0 +1,25 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Punch Machine Bluetooth Control</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    .row { margin-bottom: 15px; }
+    input { margin: 5px; padding: 5px; }
+    button { padding: 10px 20px; }
+  </style>
+</head>
+<body>
+  <h1>Punch Machine Control</h1>
+  <label>Number of Punch Rows:</label>
+  <input type="number" id="numRows" min="1" />
+  <button onclick="generateRows()">Generate</button>
+  <div id="punchRows"></div>
+  <label><input type="checkbox" id="simultaneous" /> Send Simultaneously</label><br><br>
+  <button onclick="startPunch()">Start Punch</button>
+  <button onclick="connectBluetooth()">🔗 Connect Bluetooth</button>
+  <script src="script.js"></script>
+</body>
+</html>
