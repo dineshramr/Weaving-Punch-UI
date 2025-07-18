@@ -1,40 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Punch Machine Bluetooth Control</title>
-  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="icon" href="favicon.png" type="image/png">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      text-align: center;
-    }
-    .row {
-      margin-bottom: 15px;
-    }
-    input {
-      margin: 5px;
-      padding: 5px;
-    }
-    button {
-      padding: 10px 20px;
-      margin-top: 10px;
-    }
-    .logo {
-      max-width: 200px;
-      margin-bottom: 20px;
-    }
-    #punchRows {
-      margin-top: 20px;
-      text-align: left;
-      display: inline-block;
-    }
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    .row { margin-bottom: 15px; }
+    input { margin: 5px; padding: 5px; }
+    button { padding: 10px 20px; }
+    img { width: 150px; margin-bottom: 20px; }
   </style>
 </head>
 <body>
-  <img src="logo.jpg" alt="Logo" class="logo" />
-
+  <img src="logo.jpg" alt="Logo" />
   <h1>Punch Machine Control</h1>
 
   <label>Number of Punch Rows:</label>
@@ -43,16 +22,15 @@
 
   <div id="punchRows"></div>
 
-  <label>
-    <input type="checkbox" id="simultaneous" /> Send Simultaneously
-  </label>
-  <br /><br />
-
+  <label><input type="checkbox" id="simultaneous" /> Send Simultaneously</label><br><br>
   <button onclick="startPunch()">Start Punch</button>
   <button onclick="connectBluetooth()">🔗 Connect Bluetooth</button>
+
+  <p id="status"></p>
 
   <script src="script.js"></script>
 </body>
 </html>
+
 
 
