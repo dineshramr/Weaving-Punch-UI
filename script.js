@@ -1,72 +1,58 @@
 let bluetoothDevice;
-let bluetoothServer;
 let bluetoothCharacteristic;
+
+function generateRows() {
+  const container = document.getElementById("inputRowsContainer");
+  container.innerHTML = "";
+
+  const count = parseInt(document.getElementById("rowCountInput").value);
+  if (isNaN(count) || count <= 0) return;
+
+  for (let i = 0; i < count; i++) {
+    const row = document.createElement("div");
+    row.className = "row";
+    row.innerHTML = `
+      <label>Punch ${i + 1}</label><br/>
+      <input type="text" placeholder="Enter values like 1,2,3" id="values${i}" /><br/>
+      <input type="number" placeholder="Repeat Count" id="repeat${i}" min="1" />
+    `;
+    container.appendChild(row);
+  }
+}
 
 async function connectBluetooth() {
   try {
     bluetoothDevice = await navigator.bluetooth.requestDevice({
       acceptAllDevices: true,
-      optionalServices: [0x1101] // Serial Port Profile UUID
+      optionalServices: ['0000ffe0-0000-1000-8000-00805f9b34fb']
     });
-    bluetoothServer = await bluetoothDevice.gatt.connect();
-    bluetoothStatus.textContent = "Connected to: " + bluetoothDevice.name;
+
+    const server = await bluetoothDevice.gatt.connect();
+    const service = await server.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
+    bluetoothCharacteristic = await service.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb');
+
+    document.getElementById("statusText").textContent = "✅ Connected to " + bluetoothDevice.name;
   } catch (error) {
-    bluetoothStatus.textContent = "Connection Failed";
+    document.getElementById("statusText").textContent = "❌ Connection failed";
     console.error(error);
   }
 }
 
-function generatePunchInputs() {
-  const count = parseInt(document.getElementById("numPunches").value);
-  const container = document.getElementById("generatedInputs");
-  container.innerHTML = '';
-
-  for (let i = 1; i <= count; i++) {
-    const div = document.createElement("div");
-    div.className = "input-row";
-
-    const label = document.createElement("label");
-    label.textContent = `Punch ${i}:`;
-
-    const input = document.createElement("input");
-    input.placeholder = "Enter punch values (e.g. 1,3,5)";
-    input.id = `punch-${i}`;
-
-    const repeat = document.createElement("input");
-    repeat.placeholder = "Repeat count";
-    repeat.type = "number";
-    repeat.id = `repeat-${i}`;
-    repeat.style.marginTop = "8px";
-
-    div.appendChild(label);
-    div.appendChild(input);
-    div.appendChild(repeat);
-
-    container.appendChild(div);
+function sendData() {
+  if (!bluetoothCharacteristic) {
+    alert("Please connect to Bluetooth device first.");
+    return;
   }
-}
 
-function sendAllPunchData() {
-  const count = parseInt(document.getElementById("numPunches").value);
-  let output = '';
+  const count = parseInt(document.getElementById("rowCountInput").value);
+  for (let i = 0; i < count; i++) {
+    const values = document.getElementById(`values${i}`).value.trim();
+    const repeat = document.getElementById(`repeat${i}`).value.trim();
 
-  for (let i = 1; i <= count; i++) {
-    const punchVal = document.getElementById(`punch-${i}`).value.trim();
-    const repeatVal = document.getElementById(`repeat-${i}`).value.trim();
-    if (punchVal !== '' && repeatVal !== '') {
-      const data = `${punchVal};${repeatVal}\n`;
-      output += data;
+    if (values && repeat) {
+      const msg = `${values};${repeat}\n`;
+      const encoder = new TextEncoder();
+      bluetoothCharacteristic.writeValue(encoder.encode(msg)).catch(err => console.error(err));
     }
   }
-
-  console.log("Sending data:\n", output);
-
-  if (bluetoothCharacteristic) {
-    const encoder = new TextEncoder();
-    bluetoothCharacteristic.writeValue(encoder.encode(output));
-  } else {
-    alert("Bluetooth not connected.");
-  }
 }
-
-document.getElementById("connectBluetooth").addEventListener("click", connectBluetooth);
