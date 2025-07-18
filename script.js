@@ -1,58 +1,70 @@
+let bluetoothDevice;
+let bluetoothCharacteristic;
+
+async function connectBluetooth() {
+  try {
+    bluetoothDevice = await navigator.bluetooth.requestDevice({
+      acceptAllDevices: true,
+      optionalServices: [0x1101]
+    });
+    const server = await bluetoothDevice.gatt.connect();
+    const services = await server.getPrimaryServices();
+
+    // Try to find writable characteristic
+    for (const service of services) {
+      const characteristics = await service.getCharacteristics();
+      for (const char of characteristics) {
+        if (char.properties.write) {
+          bluetoothCharacteristic = char;
+          document.getElementById('status').innerText = "✅ Connected";
+          return;
+        }
+      }
+    }
+    document.getElementById('status').innerText = "❌ No writable characteristic found";
+  } catch (error) {
+    console.error(error);
+    document.getElementById('status').innerText = "❌ Failed to connect";
+  }
+}
+
 function generateRows() {
-  const count = parseInt(document.getElementById("rowCountInput").value);
-  const container = document.getElementById("punchContainer");
-  container.innerHTML = "";
+  const count = parseInt(document.getElementById("rowCount").value);
+  const inputSection = document.getElementById("inputSection");
+  inputSection.innerHTML = '';
 
   for (let i = 0; i < count; i++) {
-    const rowDiv = document.createElement("div");
-    rowDiv.className = "punchRow";
-
-    const label = document.createElement("label");
-    label.textContent = `Punch ${i + 1}:`;
-
-    const valueInput = document.createElement("input");
-    valueInput.type = "text";
-    valueInput.placeholder = "Enter values (e.g. 1,3,5)";
-    valueInput.className = "valueInput";
-
-    const repeatInput = document.createElement("input");
-    repeatInput.type = "number";
-    repeatInput.placeholder = "Repeat";
-    repeatInput.className = "repeatInput";
-
-    rowDiv.appendChild(label);
-    rowDiv.appendChild(valueInput);
-    rowDiv.appendChild(repeatInput);
-    container.appendChild(rowDiv);
+    const div = document.createElement("div");
+    div.className = "punch-row";
+    div.innerHTML = `
+      <label>Punch ${i + 1}</label><br>
+      <input type="text" placeholder="Enter values (e.g. 1,2,3)" class="values">
+      <input type="number" placeholder="Repeat count" class="repeat">
+    `;
+    inputSection.appendChild(div);
   }
 }
 
-function sendData() {
-  const simultaneous = document.getElementById("simultaneous").checked;
-  const valueInputs = document.querySelectorAll(".valueInput");
-  const repeatInputs = document.querySelectorAll(".repeatInput");
-
-  const combinedData = [];
-
-  for (let i = 0; i < valueInputs.length; i++) {
-    const values = valueInputs[i].value.trim();
-    const repeat = repeatInputs[i].value.trim();
-    combinedData.push(`${values};${repeat}`);
+async function sendData() {
+  if (!bluetoothCharacteristic) {
+    alert("Bluetooth not connected!");
+    return;
   }
 
-  if (simultaneous) {
-    // Send all at once
-    const data = combinedData.join("|");
-    console.log("Sending simultaneously:", data);
-    // Replace with Bluetooth send here
-  } else {
-    // Send one by one
-    for (let i = 0; i < combinedData.length; i++) {
-      console.log("Sending:", combinedData[i]);
-      // Replace with Bluetooth send here
-    }
+  const rows = document.querySelectorAll(".punch-row");
+  for (let row of rows) {
+    const values = row.querySelector(".values").value.trim();
+    const repeat = row.querySelector(".repeat").value.trim();
+    const data = `${values};${repeat}`;
+
+    const encoder = new TextEncoder();
+    await bluetoothCharacteristic.writeValue(encoder.encode(data));
+    await new Promise(resolve => setTimeout(resolve, 300)); // small delay
   }
+
+  alert("✅ Data sent to HC-05 device!");
 }
+
 
 
 
