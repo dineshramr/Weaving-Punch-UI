@@ -3,82 +3,71 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Punch Input</title>
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <title>Punch Machine Controller</title>
+  <link rel="icon" type="image/png" href="favicon.png">
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      background: #f3f3f3;
       padding: 20px;
+      margin: 0;
+      background: #f8f9fa;
     }
     h1 {
       color: #333;
     }
-    .input-row {
-      margin: 10px auto;
-      padding: 10px;
-      background: #fff;
-      width: 80%;
-      max-width: 500px;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    .input-row label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
-    .input-row input {
-      width: 90%;
-      padding: 10px;
+    input, button {
+      padding: 12px 14px;
       font-size: 16px;
+      margin: 8px;
       border-radius: 6px;
       border: 1px solid #ccc;
+      width: 80%;
+      max-width: 320px;
     }
-    #generatedInputs {
+    .row {
+      background: white;
+      margin: 10px auto;
+      padding: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 400px;
+      border-radius: 8px;
+    }
+    .buttons {
       margin-top: 20px;
     }
-    button {
-      padding: 12px 20px;
-      font-size: 16px;
-      border: none;
-      background-color: #007bff;
+    #bluetoothConnectBtn {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #007BFF;
       color: white;
-      border-radius: 8px;
-      cursor: pointer;
-      margin: 10px;
+      border: none;
     }
-    button:hover {
-      background-color: #0056b3;
-    }
-    #bluetoothStatus {
+    .status {
       margin-top: 10px;
-      font-weight: bold;
-    }
-    #connectBluetooth {
-      margin-top: 40px;
-    }
-    #logo {
-      max-width: 100px;
-      margin-bottom: 10px;
+      font-size: 14px;
+      color: green;
     }
   </style>
 </head>
 <body>
-  <img id="logo" src="logo.jpg" alt="Logo" />
-  <h1>Punch Sheet Sender</h1>
-  
-  <label for="numPunches">Enter number of Punch Rows:</label>
-  <input type="number" id="numPunches" min="1" style="padding: 10px; font-size: 16px; width: 60px;" />
-  <button onclick="generatePunchInputs()">Generate Punch Inputs</button>
+  <img src="logo.jpg" alt="Logo" style="width: 120px; margin-bottom: 20px;" />
+  <h1>Punch Machine</h1>
 
-  <div id="generatedInputs"></div>
+  <input type="number" id="rowCountInput" placeholder="How many punch rows?" min="1" />
+  <button onclick="generateRows()">Generate Punch Inputs</button>
 
-  <button onclick="sendAllPunchData()">Send All Punch Data</button>
+  <div id="inputRowsContainer"></div>
 
-  <button id="connectBluetooth">Connect to Bluetooth</button>
-  <div id="bluetoothStatus">Not Connected</div>
+  <div class="buttons">
+    <button onclick="sendData()">Start</button>
+  </div>
+
+  <button id="bluetoothConnectBtn" onclick="connectBluetooth()">🔌 Connect Bluetooth</button>
+  <div class="status" id="statusText">Not connected</div>
 
   <script src="script.js"></script>
 </body>
