@@ -1,69 +1,55 @@
+
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Punch Machine Bluetooth Control</title>
-  <link rel="icon" type="image/png" href="favicon.png">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Punch Sender</title>
+  <link rel="icon" href="favicon.png" type="image/png" />
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 20px;
       text-align: center;
+      background-color: #f0f0f0;
     }
-    .row {
-      margin-bottom: 15px;
+    #punchContainer {
+      margin-top: 20px;
     }
-    #punchRows {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    input, label {
-      margin: 5px;
-      padding: 5px;
-    }
-    button {
-      padding: 10px 20px;
-      margin: 10px;
-    }
-    .punch-input-group {
+    .punchRow {
       display: flex;
       justify-content: center;
       align-items: center;
-      flex-wrap: wrap;
+      margin-bottom: 10px;
+      gap: 10px;
     }
-    .punch-input-group input {
-      margin: 0 5px;
+    .punchRow input {
+      padding: 8px;
+      width: 200px;
+      text-align: center;
+    }
+    .title {
+      margin-top: 20px;
+    }
+    img.logo {
+      width: 120px;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
-  <img src="logo.jpg" alt="Logo" style="max-width: 150px; display: block; margin: auto;">
-  <h1>Punch Machine Control</h1>
+  <img src="logo.jpg" alt="Logo" class="logo"/>
+  <h1 class="title">Punch Data Sender</h1>
 
-  <div class="row">
-    <label>Number of Punch Rows:</label>
-    <input type="number" id="numRows" min="1" />
-    <button onclick="generateRows()">Generate</button>
-  </div>
+  <input type="number" id="rowCountInput" placeholder="Enter number of punch rows" />
+  <button onclick="generateRows()">Generate Punch Inputs</button>
+  <br><br>
+  <label><input type="checkbox" id="simultaneous"> Send Simultaneously</label>
+  <br><br>
 
-  <div id="punchRows"></div>
-
-  <div>
-    <label>
-      <input type="checkbox" id="simultaneous" />
-      Send Simultaneously
-    </label>
-  </div>
-
-  <button onclick="startPunch()">Start Punch</button>
-  <button onclick="connectBluetooth()">🔗 Connect Bluetooth</button>
+  <div id="punchContainer"></div>
+  <button onclick="sendData()">Send</button>
 
   <script src="script.js"></script>
 </body>
 </html>
-
-
-
-
-
